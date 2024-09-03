@@ -14,6 +14,7 @@
 #F = conjunto de estados de aceitação {q1}
 
 import re
+from data import reservedWords
 
 _letter = r'[a-zA-Z]'
 _oneAndMoreLetter = r'(?:[A-Za-z0-9_]*)'
@@ -36,34 +37,47 @@ estadoAtual = estadoInicial
 estadosFinais = ["s1"]
 
 
-
+#line representa cada linha do arquivo, por exemplo.
+line = "extends="
 counter = 0
-while(1):
-    print("Insira as informações: ", end="")
-    alfabeto = input()
-    estadoAtual = estadoInicial
+estadoAtual = estadoInicial
+lexeme = ""
+currentIndex = 0
 
-    for char in alfabeto:
-        print(f'Estado atual {estadoAtual}')
-        print(f'Entrada Atual {char}') 
+# Função que verifica se está contido na lista de palavras chaves 
+def  checkInReservedWords(value):
+    print(value in reservedWords)
+    if value in reservedWords:
+        print (f'<keyword, {value}>')
+     
 
 
+
+while currentIndex < len(line):
+    # usado pra algumas verificações que serão preciso
+    next_index = currentIndex + 1 if currentIndex + 1 < len(line) else currentIndex
+
+    for char in line:
+        currentIndex += 1
         if estadoAtual == "s0":
             if re.fullmatch(_letter,char):
                 estadoAtual = "s1"
-                print ("Casou")
+                lexeme = lexeme + char
             else:
                 estadoAtual = "s0"
-                print ("Não casou")
                 break
-        
+    
         elif estadoAtual == "s1":
+            
             if re.fullmatch(_oneAndMoreLetter,char):
                 estadoAtual = "s1"
-                print ("Casou")
+                lexeme = lexeme + char               
             else:
-                print ("Não casou")
+                checkInReservedWords(lexeme)
+                index = len(line)
                 break
+    
+
 
 # while conter<len(alfabeto):
 
