@@ -55,7 +55,7 @@ def  checkLexemeType(item):
      
     
 
-line = "extends=34;"
+line = "extends=33.14;"
 
 def startAnalyze():
     initState = "s0"
@@ -68,6 +68,7 @@ def startAnalyze():
     # usado pra algumas verificações que serão preciso
 
         for char in line:
+
             nextIndex = currentIndex + 1 if currentIndex + 1 <= len(line) -1 else currentIndex
             if currentState == "s0":
                 if re.fullmatch(regularExpressions['letter'],char):
@@ -96,10 +97,14 @@ def startAnalyze():
 
             
             elif currentState == "s2":
+
                 if re.fullmatch(regularExpressions['digit'], char):
                     currentState = "s2"
-                    lexeme = lexeme + char                           
+                    lexeme = lexeme + char 
+                    
+                    print     ('.' == line[nextIndex] )                 
                     if not '.' == line[nextIndex] and not re.fullmatch(regularExpressions['digit'], line[nextIndex]):
+
                         currentState = "s0"
                         checkLexemeType(lexeme)
                         lexeme = ''                   
@@ -107,6 +112,9 @@ def startAnalyze():
                         currentState = 's3'
                     elif re.fullmatch(regularExpressions['digit'], line[nextIndex]): 
                         currentState = 's2'
+                elif '.' == char: 
+                    lexeme = lexeme + char 
+                    currentState = 's3'
                 
 
             elif currentState == "s3":
