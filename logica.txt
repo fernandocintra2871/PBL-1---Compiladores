@@ -1,0 +1,52 @@
+Lógica por trás do funcionamento do analisador léxico:
+
+    Lógica para maquina de estados referente aos keywords/identificadores:
+    
+        s1 -> estado final
+
+        tô em s0, recebo uma letter => s1
+            próximo caracter letter | digit | _ ?
+                sim? vá para s1
+                não? fica em s0 e identifica o id
+
+        tô em s1, recebo uma letter = s1
+            próximo caracter letter | digit | _ ?
+                sim? fica para s1
+                não? fica em s0 e identifica o id
+
+        tô em s1, recebo diferente => s0
+
+    Lógica para maquina de estados referente aos números:
+    
+        s2 -> um estado final
+        s3 -> um estado final
+
+
+        tô em s0, recebo um digit -> s2
+       
+        tô em s2, recebo um digit -> s2
+            próximo caracter digito ?
+            sim? fica em s2
+            não? volta pra s0
+
+        tô em s2, recebo um . -> s2
+            próximo caracter digito ?
+            sim? fica em s3
+            não? volta pra s0
+
+
+        tô em s2, recebo diferenet de um 'number' ou diferente de um '.' -> s0
+
+        tô em s3, recebo != de um number -> s0
+
+        tô em s3, recebo um number -> s3
+            próximo caracter digito ?
+            sim? fica em s3
+            não? volta pra s0
+
+
+
+
+
+
+
