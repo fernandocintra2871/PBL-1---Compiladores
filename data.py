@@ -23,6 +23,18 @@ reservedWords = {
 }
 
 
+# Operadores aritmeticos 
+operatorsArithmetic = ['+', '-', '++', '--','*', '/']
+
+#Operadores Relacionais 
+operatorsRelational = ['==', '=', '!=', '>', '>=', '<', '<=']
+
+# Operadores Lógicos 
+operatorsLogical = ['&&', '||']
+
+
+
+
 # Dicionário que contém todas as expressões regulares 
 '''
     As outras expressões como :
@@ -33,6 +45,7 @@ reservedWords = {
 
     São composições que utilizam as outras expressões regulares, por exemplo.
 '''
+
 
 
 

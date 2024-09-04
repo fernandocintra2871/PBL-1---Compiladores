@@ -1,3 +1,22 @@
+ M = (Q, Σ, δ, q0, F)
+
+ q = conjunto de estados do autômato (q0 (estado inicial), q1(estado de espera))
+
+ Σ = alfabeto  de entradas
+
+δ = Funções de transição{
+    δ: (q0, letter) => q1
+    δ: (q1, letter) => q1
+    δ: (q0, other) => q0
+}
+
+q0 = estado inicial
+F = conjunto de estados de aceitação {q1}
+
+
+
+
+
 Lógica por trás do funcionamento do analisador léxico:
 
     Lógica para maquina de estados referente aos keywords/identificadores:
