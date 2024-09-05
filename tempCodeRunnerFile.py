@@ -1,2 +1,2 @@
- # elif item in operatorsArithmetic or operatorsRelational or operatorsLogical:
-    #     tokenList.append(f'<operators, {item}>')
+    currentState = "s3"
+                lexeme = lexeme + char

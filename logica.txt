@@ -64,6 +64,23 @@ Lógica por trás do funcionamento do analisador léxico:
             não? volta pra s0
 
 
+     Lógica para máquina que analisa strings:
+        tô em s0 -> entrada (")
+            vou para s4
+        
+
+            qual a lógica que tenho que implementar? 
+                Para string, tenho que ler o contéudo até encontrar o próximo \n ou próximo (")
+            
+            if s4 recebo ", retorna <string, ""> 
+            se não, próximo estado até receber "
+
+            ou seja: 
+                Enquanto não encontrar o finalizador das aspas, 
+                    adiciono mais 1 ao currentIndex e adiciono o valor ao lexema
+
+                Se não encontrar o " para finalizar a string na mesma linha, acontece um erro 
+
 
 
 

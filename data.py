@@ -26,11 +26,14 @@ reservedWords = {
 # Operadores aritmeticos 
 operatorsArithmetic = ['+', '-', '++', '--','*', '/']
 
-#Operadores Relacionais 
+# Operadores Relacionais 
 operatorsRelational = ['==', '=', '!=', '>', '>=', '<', '<=']
 
 # Operadores Lógicos 
 operatorsLogical = ['&&', '||']
+
+# Delimitadores
+delimiters = [';',',','(',')','{','}']
 
 
 
