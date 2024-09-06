@@ -27,10 +27,19 @@ reservedWords = {
 operatorsArithmetic = ['+', '-', '++', '--','*', '/']
 
 # Operadores Relacionais 
-operatorsRelational = ['==', '=', '!=', '>', '>=', '<', '<=']
+operatorsRelational = ['==', '!=', '>', '>=', '<', '<=']
 
 # Operadores Lógicos 
 operatorsLogical = ['&&', '||']
+
+# Operador de Acesso
+operatorsAcess = ['=']
+
+operatorsAssignment = ["."]
+
+operators = ['+', '-', '++', '--','*', '/', '==', '!=', '>', '>=', '<', '<=', '&&', '||', '=', "."]
+
+# Operador de Atribuição
 
 # Delimitadores
 delimiters = [';',',','(',')','{','}']
