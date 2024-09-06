@@ -1,6 +1,6 @@
 import re
 import string
-from data import reservedWords, operatorsArithmetic, operatorsRelational, operatorsLogical, delimiters
+from data import reservedWords, delimiters, operators, uniqueOperators
 
 estados = ["s0", "s1"]
 func_transictions = {}
@@ -18,44 +18,34 @@ symbol_table = []
 def isDelimiter(char):
     return char in delimiters
 
-# Função que verifca o tipo de lexema
-def  checkLexemeType(item, n=999):
-    if item in reservedWords:
-        tokenList.append(f'<Key-words, {item}, {n}>')
 
-    elif item in operatorsArithmetic or item in  operatorsRelational or  item in  operatorsLogical:
-        tokenList.append(f'<Operators, {item}, {n}>')
-
-    elif item in delimiters:
-        tokenList.append(f'<Delimiters, {item}, {n}>')
-
-    elif type(item) is float or type(item) is int :
-        tokenList.append(f'<Number, {item}, {n}>')
-     
+# Função que retorna se Caractere está contido na lista de delimitadores:
+def isOperator(char):
+    return char in operators
 
 
+# Função para adicionar o token na lista de tokens:
+def addTokenList(lexeme, type, n=999):
+    if (type == ""):
+        if lexeme in reservedWords:
+            tokenList.append(f'<Key-words, {lexeme}, {n}>')
+        elif lexeme in symbol_table:
+            tokenList.append(f'<Identifiers, {lexeme}, {symbol_table.index(lexeme)}, {n}>')
+        else:
+            symbol_table.append(lexeme)
+            tokenList.append(f'<Identifiers, {lexeme}, {symbol_table.index(lexeme)}, {n}>')
+
+    elif (type == "String"):
+        if (lexeme[0] == "\"" and lexeme[-1] == "\""):
+            tokenList.append(f'<{type}, {lexeme}, {n}>')
+
+    elif (type == "Character"):
+        if (lexeme[0] == "\'" and lexeme[-1] == "\'"):
+            tokenList.append(f'<{type}, {lexeme}, {n}>')
+
+    else: 
+        tokenList.append(f'<{type}, {lexeme}, {n}>')
     
-# Função para adicionar um identificador na tabela de simbolos ou utilizar uma keyword: 
-def keywordOrIdentifier(lexeme, n=999):
-    if lexeme in reservedWords:
-        tokenList.append(f'<Key-words, {lexeme}, {n}>')
-    elif lexeme in symbol_table:
-        tokenList.append(f'<Identifiers, {lexeme}, {symbol_table.index(lexeme)}, {n}>')
-    
-    else:
-        symbol_table.append(lexeme)
-        tokenList.append(f'<Identifiers, {lexeme}, {symbol_table.index(lexeme)}, {n}>')
-
-# Função para retornar um token do tipo string
-def stringTokenType(lexeme):
-    if lexeme[0] == "\"" and lexeme[-1] == "\"" :
-        tokenList.append(f'<String, {lexeme}>')
-    
-
-# Função para retornar um token do tipo Caractere
-def characterTokenType(lexeme):
-    if lexeme[0] == "\'" and lexeme[-1] == "\'" :
-        tokenList.append(f'<Character, {lexeme}>')
 
 
 # Função para reset, quando acabar a linha (add index para verificar se está no fim de linha e deixar implicito a está func)
@@ -86,10 +76,10 @@ def startAnalyze(line, n):
                     if line[nextIndex].isalpha() or line[nextIndex].isdigit() or line[nextIndex] == '_':
                         currentState = "s1"
                     else:
-                        keywordOrIdentifier(lexeme, n)
+                        addTokenList(lexeme, "", n=999)
                         currentState, lexeme = reset(currentState, lexeme)
                 else:
-                    keywordOrIdentifier(lexeme, n)
+                    addTokenList(lexeme, "", n=999)
                     currentState, lexeme = reset(currentState, lexeme)
 
             elif char.isdigit():
@@ -98,23 +88,75 @@ def startAnalyze(line, n):
                     if line[nextIndex].isdigit() or line[nextIndex] == ".":
                         currentState = "s2"
                     else:
-                        checkLexemeType(float(lexeme), n)
+                        addTokenList(lexeme, "Number", n=999)
                         currentState, lexeme = reset(currentState, lexeme)  
                 else:
-                    checkLexemeType(float(lexeme), n)
+                    addTokenList(lexeme, "Number", n=999)
                     currentState, lexeme = reset(currentState, lexeme)
 
             elif char == "\"":
-                currentState = "s4"
                 lexeme = lexeme + char
+                if nextIndex < len(line):
+                    if line[nextIndex] != "\"":
+                        currentState = "s5"
+                    else:
+                        addTokenList(lexeme, "String", n)
+                        currentState, lexeme = reset(currentState, lexeme)  
+                else:
+                    errorList.append(f'<Error, String mal formada>')
+                    currentState, lexeme = reset(currentState, lexeme)
+
             elif char == "\'":
-                currentState = "s6"
                 lexeme = lexeme + char
+                if nextIndex < len(line):
+                    if line[nextIndex] != "\'":
+                        currentState = "s6"
+                    else:
+                        addTokenList(lexeme, "Character", n)
+                        currentState, lexeme = reset(currentState, lexeme)  
+                else:
+                    errorList.append(f'<Error, Character mal formada>')
+                    currentState, lexeme = reset(currentState, lexeme)
+
             elif isDelimiter(char):
-                currentState = "s8"
                 lexeme = lexeme + char
-                checkLexemeType(lexeme)
+                addTokenList(lexeme, "Delimiters", n)
                 currentState, lexeme = reset(currentState, lexeme)
+
+            elif isOperator(char):
+                lexeme += char
+                if nextIndex < len(line):
+                    if lexeme == "/" or lexeme == "*"  or lexeme == "." :
+                        addTokenList(lexeme, "Operators", n)
+                        currentState, lexeme = reset(currentState, lexeme)
+                    else: 
+                        # Comparação para ++ == --
+                        if lexeme == "+" and line[nextIndex] != lexeme:
+                            addTokenList(lexeme, "Operators", n)
+                            currentState, lexeme = reset(currentState, lexeme)
+                        else: 
+                            currentState = 's8'
+                        
+                        if lexeme == "-" and line[nextIndex] != lexeme:
+                            addTokenList(lexeme, "Operators", n)
+                            currentState, lexeme = reset(currentState, lexeme)
+                        else: 
+                            currentState = 's8'
+
+                        if lexeme == "=" and line[nextIndex] != lexeme:
+                            addTokenList(lexeme, "Operators", n)
+                            currentState, lexeme = reset(currentState, lexeme)
+                        else: 
+                            currentState = 's8'
+                    
+                else:
+                    if lexeme in uniqueOperators:
+                        addTokenList(lexeme, "Operators", n)
+                        currentState, lexeme = reset(currentState, lexeme)
+                    else: 
+                        errorList.append(f"<Erro, operadores {line}> ")
+                        currentState, lexeme = reset(currentState, lexeme)
+
             else:
                 currentState = "s0"
 
@@ -126,10 +168,12 @@ def startAnalyze(line, n):
                 if line[nextIndex].isalpha() or line[nextIndex].isdigit() or line[nextIndex] == '_':
                     currentState = "s1"
                 else: 
-                    keywordOrIdentifier(lexeme, n)
+                    addTokenList(lexeme, "", n)
+                    # keywordOrIdentifier(lexeme, n)
                     currentState, lexeme = reset(currentState, lexeme)
             else:
-                keywordOrIdentifier(lexeme, n)
+                addTokenList(lexeme, "", n)
+                # keywordOrIdentifier(lexeme, n)
                 currentState, lexeme = reset(currentState, lexeme)
         
         # s2 Numbers 1
@@ -141,10 +185,12 @@ def startAnalyze(line, n):
                 elif line[nextIndex] == ".":
                     currentState = "s3"
                 else:
-                    checkLexemeType(float(lexeme), n)
+                    addTokenList(lexeme, "Number", n)
+                    # checkLexemeType(float(lexeme), n)
                     currentState, lexeme = reset(currentState, lexeme)
             else:
-                checkLexemeType(float(lexeme), n)
+                addTokenList(lexeme, "Number", n)
+                # checkLexemeType(float(lexeme), n)
                 currentState, lexeme = reset(currentState, lexeme)                   
 
         # s3 Numbers 2
@@ -153,14 +199,15 @@ def startAnalyze(line, n):
                 if line[nextIndex].isdigit():
                     lexeme = lexeme + char 
                     currentState = "s4"
+                # se ele tá em s3 signfica que tem: xxxx . 
+                # ele ta aguardando os próximos digitos, se o próximo não for digito, sai daqui. 
+                
                 else:
-                    checkLexemeType(float(lexeme), n)
-                    currentState, lexeme = reset(currentState, lexeme)
-                    lexeme = lexeme + char 
-                    checkLexemeType(lexeme, n)
+                
+                    addTokenList(lexeme, "Number", n)
                     currentState, lexeme = reset(currentState, lexeme)
             else:
-                checkLexemeType(float(lexeme), n)
+                addTokenList(lexeme, "Number", n)
                 currentState, lexeme = reset(currentState, lexeme) 
 
         # s4 Numbers 3
@@ -170,17 +217,17 @@ def startAnalyze(line, n):
                 if line[nextIndex].isdigit():
                     currentState = "s4"
                 else:
-                    checkLexemeType(float(lexeme), n)
+                    addTokenList(lexeme, "Number", n)
                     currentState, lexeme = reset(currentState, lexeme)
             else:
-                checkLexemeType(float(lexeme), n)
+                addTokenList(lexeme, "Number", n)
                 currentState, lexeme = reset(currentState, lexeme) 
 
-        # s4 String
-        elif currentState == "s4":
+        # s5 String
+        elif currentState == "s5":
             if char == "\"":
                 lexeme = lexeme + char
-                stringTokenType(lexeme)
+                addTokenList(lexeme, "String", n)
                 currentState, lexeme = reset(currentState, lexeme)
             elif char.isalpha() or char.isdigit() or (32 <= ord(char) <= 126 and ord(char) != 34 and ord(char) !=39):
                 lexeme = lexeme + char
@@ -197,18 +244,44 @@ def startAnalyze(line, n):
                 lexeme = lexeme + char
                 currentState = "s7"
             else:
-                currentState, lexeme = reset(currentState, lexeme)
                 errorList.append(f'<Error, Character mal formado>')
+                currentState, lexeme = reset(currentState, lexeme)
 
         # s7 Character
         elif currentState == "s7":
             if char == "\'":
                 lexeme = lexeme + char
-                characterTokenType(lexeme)
+                addTokenList(lexeme, "Character", n)
                 currentState, lexeme = reset(currentState, lexeme)
             else:
                 errorList.append(f'<Error, Character mal formado>')
+                currentState, lexeme = reset(currentState, lexeme)
+
         
+        # s8 Operators
+        elif currentState == "s8":
+            if(lexeme == "+" and char == "+"):
+                lexeme += char
+                addTokenList(lexeme, "Operators", n)
+                currentState, lexeme = reset(currentState, lexeme)
+            else:
+                currentState, lexeme = reset(currentState, lexeme)
+
+            if(lexeme == "-" and char == "-"):
+                lexeme += char
+                addTokenList(lexeme, "Operators", n)
+                currentState, lexeme = reset(currentState, lexeme)
+            else:
+                currentState, lexeme = reset(currentState, lexeme)
+
+            if(lexeme == "=" and char == "="):
+                lexeme += char
+                addTokenList(lexeme, "Operators", n)
+                currentState, lexeme = reset(currentState, lexeme)
+            else:
+                currentState, lexeme = reset(currentState, lexeme)
+
+            
 
         if currentIndex == len(line) -1 and lexeme != "":
             currentIndex = currentIndex

@@ -33,9 +33,11 @@ operatorsRelational = ['==', '!=', '>', '>=', '<', '<=']
 operatorsLogical = ['&&', '||']
 
 # Operador de Acesso
-operatorsAcess = ['=']
+operatorsAssignment = ['=']
 
-operatorsAssignment = ["."]
+operatorsAcess = ["."]
+
+uniqueOperators = ['+','-','*', '/', '=','.']
 
 operators = ['+', '-', '++', '--','*', '/', '==', '!=', '>', '>=', '<', '<=', '&&', '||', '=', "."]
 
