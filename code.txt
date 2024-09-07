@@ -21,3 +21,18 @@
 ||
 
 +->=<=><==*./!=!=&&&|||
+
+// Fala que é nós
+/* Testando */
+/* aaa
+d
+b
+aq
+12
+3
+asdasd 
+*/
+/**/
+/* asdasd 
+*/
+para ver 

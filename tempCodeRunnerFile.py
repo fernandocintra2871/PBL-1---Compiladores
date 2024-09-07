@@ -1,1 +1,1 @@
-checkLexemeType
+lexBuffer[len(l
