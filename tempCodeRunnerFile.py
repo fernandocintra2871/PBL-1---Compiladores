@@ -1,1 +1,2 @@
-lexBuffer[len(l
+  # lines = file.readlines()
+        # lineCount = len(lines)
