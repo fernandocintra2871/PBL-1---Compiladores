@@ -1,18 +1,10 @@
-import re
-import string
 from data import reservedWords, delimiters, operators, uniqueOperators, doubleOperators
 
-estados = ["s0", "s1"]
-func_transictions = {}
-estadosFinais = ["s1, s2","s3", "s4", "s5"]
 # Lista que contém todos os tokens
 tokenList = []
 
-# Lista de contendo os erros
+# Lista que contém todos os erros
 errorList = []
-
-# Buffer para manter o lexema
-lexBuffer = []
 
 # Tabela de Simbolos
 symbol_table = []
@@ -21,15 +13,13 @@ symbol_table = []
 def isDelimiter(char):
     return char in delimiters
 
-
 # Função que retorna se Caractere está contido na lista de delimitadores:
 def isOperator(char):
     return char in operators
 
-
 # Função para adicionar o token na lista de tokens:
-def addTokenList(lexeme, type, n=999):
-    if (type == ""):
+def addTokenList(lexeme, type, n):
+    if type == "Identifiers":
         if lexeme in reservedWords:
             tokenList.append(f'<Key-words, {lexeme}, {n}>')
         elif lexeme in symbol_table:
@@ -37,15 +27,6 @@ def addTokenList(lexeme, type, n=999):
         else:
             symbol_table.append(lexeme)
             tokenList.append(f'<Identifiers, {lexeme}, {symbol_table.index(lexeme)}, {n}>')
-
-    elif (type == "String"):
-        if (lexeme[0] == "\"" and lexeme[-1] == "\""):
-            tokenList.append(f'<{type}, {lexeme}, {n}>')
-
-    elif (type == "Character"):
-        if (lexeme[0] == "\'" and lexeme[-1] == "\'"):
-            tokenList.append(f'<{type}, {lexeme}, {n}>')
-
     else: 
         tokenList.append(f'<{type}, {lexeme}, {n}>')
     
@@ -59,45 +40,42 @@ def addErrorList(lexeme, type, n):
     elif type == "BCMF":
         errorList.append(f'<Comentário de bloco mal formado, {lexeme}, {n}>')
     else: 
-        tokenList.append(f'<{type}, {lexeme}, {n}>')
+        tokenList.append(f'<Erro>, {lexeme}, {n}>')
 
-# Função para reset, quando acabar a linha (add index para verificar se está no fim de linha e deixar implicito a está func)
+# Função para resetar o estado e o buffer do lexema quando um token é encontrado
 def reset(state, lexem):
     state = "s0"
     lexem = ''
     return state, lexem
 
-
-
+# Função que analisa o arquivo de texto para identificar os tokens e os erros quando ocorridos
 def startAnalyze(file):
-    n = 1
-    initState = "s0"
-    currentState = initState
-    lexeme = ""
-    counter = 0
+    n = 1 # Linha do arquivo lida
+    currentState = "s0" # Estado atual da maquina de estados
+    lexeme = "" # Buffer que armazena os caracteres do lexema que está sendo formado
     
-    
-    for line in file:
-        n += 1
+    for line in file: 
         currentIndex = 0
         while currentIndex <= len(line) -1:
             char = line[currentIndex]
-            nextIndex = currentIndex + 1
-            print(f'{char} -> {currentState} -> {lexeme}')
+            nextIndex = currentIndex + 1 
+            # Estado inicial
             if currentState == "s0":
-                if char.isalpha():
+                # Inicia a verificação se o lexema é um Identifiers ou Key-words
+                if char.isalpha(): # Verificar se o caracter é uma Letter
                     lexeme = lexeme + char
                     if nextIndex < len(line):
                         if line[nextIndex].isalpha() or line[nextIndex].isdigit() or line[nextIndex] == '_':
                             currentState = "s1"
                         else:
-                            addTokenList(lexeme, "", n)
+                            addTokenList(lexeme, "Identifiers", n)
                             currentState, lexeme = reset(currentState, lexeme)
                     else:
-                        addTokenList(lexeme, "", n)
+                        addTokenList(lexeme, "Identifiers", n)
                         currentState, lexeme = reset(currentState, lexeme)
-        
-                elif char.isdigit():
+                
+                # Inicia a verificação se o lexema é um Numbers
+                elif char.isdigit(): # Verificar se o caracter é um Digit
                     lexeme = lexeme + char
                     if nextIndex < len(line):
                         if line[nextIndex].isdigit() or line[nextIndex] == ".":
@@ -109,6 +87,7 @@ def startAnalyze(file):
                         addTokenList(lexeme, "Number", n)
                         currentState, lexeme = reset(currentState, lexeme)
 
+                # Inicia a verificação se o lexema é uma String
                 elif char == "\"":
                     lexeme = lexeme + char
                     if nextIndex < len(line):
@@ -121,6 +100,7 @@ def startAnalyze(file):
                         addErrorList(lexeme, "SMF", n)
                         currentState, lexeme = reset(currentState, lexeme)
 
+                # Inicia a verificação se o lexema é um Character
                 elif char == "\'":
                     lexeme = lexeme + char
                     if nextIndex < len(line):
@@ -133,11 +113,13 @@ def startAnalyze(file):
                         addErrorList(lexeme, "CMF", n)
                         currentState, lexeme = reset(currentState, lexeme)
 
+                # Inicia a verificação se o lexema é um Delimiter
                 elif isDelimiter(char):
                     lexeme = lexeme + char
                     addTokenList(lexeme, "Delimiters", n)
                     currentState, lexeme = reset(currentState, lexeme)
 
+                # Inicia a verificação se o lexema é um Operators
                 elif isOperator(char):
                     lexeme += char
                     if nextIndex < len(line):
@@ -145,23 +127,18 @@ def startAnalyze(file):
                             if line[nextIndex] == "/":
                                 currentState = 's9'
                             elif line[nextIndex] == "*":
-                                print('cair aqui po')
                                 currentState = 's11'
                             else:
                                 addTokenList(lexeme, "Operators", n)
                                 currentState, lexeme = reset(currentState, lexeme)
                         elif char == "*":
-                            if line[nextIndex] == "/" and not lexeme == "":
-                                currentState = 's12'
-                            else:
-                                addTokenList(lexeme, "Operators", n)
-                                currentState, lexeme = reset(currentState, lexeme)
+                            addTokenList(lexeme, "Operators", n)
+                            currentState, lexeme = reset(currentState, lexeme)
                         else: 
                             if lexeme == ".":
                                 addTokenList(lexeme, "Operators", n)
                                 currentState, lexeme = reset(currentState, lexeme)
                             else: 
-                                # Comparação para ++ == --
                                 if lexeme == "+" and line[nextIndex] != lexeme:
                                     addTokenList(lexeme, "Operators", n)
                                     currentState, lexeme = reset(currentState, lexeme)
@@ -184,32 +161,26 @@ def startAnalyze(file):
                             addTokenList(lexeme, "Operators", n)
                             currentState, lexeme = reset(currentState, lexeme)
                         else: 
-                            errorList.append(f"<Erro, operadores {line}> ")
+                            addErrorList(lexeme, "OMF", n)
                             currentState, lexeme = reset(currentState, lexeme)
-                
-
-
                 else:
                     currentState = "s0"
                     
-
-
-            # s1 Identifiers
+            # Estado s1 (Identifiers)
             elif currentState == "s1":
                 lexeme = lexeme + char 
                 if nextIndex < len(line):
                     if line[nextIndex].isalpha() or line[nextIndex].isdigit() or line[nextIndex] == '_':
                         currentState = "s1"
                     else: 
-                        addTokenList(lexeme, "", n)
-                        # keywordOrIdentifier(lexeme, n)
+                        addTokenList(lexeme, "Identifiers", n)
                         currentState, lexeme = reset(currentState, lexeme)
                 else:
-                    addTokenList(lexeme, "", n)
-                    # keywordOrIdentifier(lexeme, n)
+                    addTokenList(lexeme, "Identifiers", n)
                     currentState, lexeme = reset(currentState, lexeme)
             
-            # s2 Numbers 1
+            # Estado s2 (Numbers)
+            # Consome os primeiros numeros
             elif currentState == "s2":
                 lexeme = lexeme + char   
                 if nextIndex < len(line):
@@ -219,31 +190,27 @@ def startAnalyze(file):
                         currentState = "s3"
                     else:
                         addTokenList(lexeme, "Number", n)
-                        # checkLexemeType(float(lexeme), n)
                         currentState, lexeme = reset(currentState, lexeme)
                 else:
                     addTokenList(lexeme, "Number", n)
-                    # checkLexemeType(float(lexeme), n)
                     currentState, lexeme = reset(currentState, lexeme)                   
 
-            # s3 Numbers 2
+            # Estado s3 (Numbers)
+            # Consome o .
             elif currentState == "s3":
                 if nextIndex < len(line):
                     if line[nextIndex].isdigit():
                         lexeme = lexeme + char 
-                        currentState = "s4"
-                    # se ele tá em s3 signfica que tem: xxxx . 
-                    # ele ta aguardando os próximos digitos, se o próximo não for digito, sai daqui. 
-                    
+                        currentState = "s4"         
                     else:
-                    
                         addTokenList(lexeme, "Number", n)
                         currentState, lexeme = reset(currentState, lexeme)
                 else:
                     addTokenList(lexeme, "Number", n)
                     currentState, lexeme = reset(currentState, lexeme) 
 
-            # s4 Numbers 3
+            # s4 (Numbers)
+            # Consome os demais numeros depois do .
             elif currentState == "s4":
                 lexeme = lexeme + char 
                 if nextIndex < len(line):
@@ -256,7 +223,7 @@ def startAnalyze(file):
                     addTokenList(lexeme, "Number", n)
                     currentState, lexeme = reset(currentState, lexeme) 
 
-            # s5 String
+            # s5 (String)
             elif currentState == "s5":
                 lexeme = lexeme + char
                 if char == "\"":
@@ -272,7 +239,7 @@ def startAnalyze(file):
                     addErrorList(lexeme, "SMF", n)
                     currentState, lexeme = reset(currentState, lexeme)
 
-            # s6 Character
+            # s6 (Character)
             elif currentState == "s6":
                 lexeme = lexeme + char
                 if char == "\'":
@@ -288,7 +255,8 @@ def startAnalyze(file):
                     addErrorList(lexeme, "CMF", n)
                     currentState, lexeme = reset(currentState, lexeme)
 
-            # s8 Operators
+            # s8 (Operators)
+            # Indentifica os operadores com o lexema de tamanho 2
             elif currentState == "s8":
                 lexeme = lexeme + char
                 if lexeme in doubleOperators:
@@ -299,74 +267,47 @@ def startAnalyze(file):
                     currentState, lexeme = reset(currentState, lexeme)
 
                 
-            # s9 Segunda / comentário individual
+            # s9 (Individual Comments)
             elif currentState == 's9':
                 lexeme += char
                 if nextIndex < len(line):
-                    currentState == 's10'
+                    currentState == 's9'
                 else: 
                     addTokenList(lexeme, "Comments", n)
                     currentState, lexeme = reset(currentState, lexeme)
-            
-            # s10 Comments Value
-            elif currentState == 's10':
+    
+            # S11 (Block comment)
+            # Consome os caracteres até encontrar um * seguido de uma /
+            elif currentState == 's11':
                 lexeme += char
                 if nextIndex < len(line):
-                    currentState == 's10'
-                else: 
-                    addTokenList(lexeme, "Comments", n)
-                    currentState, lexeme = reset(currentState, lexeme)
-            
-            # se recber um /* tem que percorrer a linha, quando chegar no final da linha, se o caracter atual for == a * e próximo == /
-            # encerra, comentário da linha
-            # se chegou no fim da linha, e não achou o fechamento */ tem que percorrer o arquivo todo, até a ultima linha procurando o */
-            # se não achou erro
-
-            # se ele for = * vai pra s11
-            # ok, se a próxima linha 
-
-
-            # S11 Block comment
-            elif currentState == 's11':
-                lexeme += char # chegou aqui signfica que recebeu * então lexeme == /*
-                currentState = 's12'
-                
-            
-            elif currentState == 's12':
-                lexeme += char
-                if nextIndex < len(line):  
-                    if (char == '*' and line[nextIndex] == '/'):
+                    if char == '*' and line[nextIndex] == '/':
                         currentState = 's13'
-                    else: 
-                        currentState = 's12'
-                else: # chegou no final da linha e não achou complemento
-                    if (char == '*' and line[nextIndex] == '/'):
-                        currentState = 's13'
-                    else: 
-                        currentState = 's12'
-
+                    else:
+                       currentState = 's11' 
+                else:
+                    currentState = 's11'
             
+            # S13 (Block comment)
+            # Consome a / e identifica o o token
             elif currentState == 's13':
                 lexeme += char
                 addTokenList(lexeme, "Comments", n)
                 currentState, lexeme = reset(currentState, lexeme)
 
-
-
-            # if currentIndex == len(line) -1 and lexeme != "":
-            #     currentIndex = currentIndex
-            # else:
-            #     currentIndex += 1
-            currentIndex += 1
+            currentIndex += 1 # Avança pra o proximo caracter da linha
+        n += 1 # Avança pra proxima linha
     
-    
+    # Se chegou ao final do arquivo e se manteve no estado s11
+    # É sinal que um comentario de bloco não foi fechado
+    if currentState == 's11': 
+        addErrorList(lexeme, "BCMF", n)
 
-
-    
-
-         
-            
-
+"""
+==============================
+        Código Principal
+==============================
+"""
 try:
     with open('code.txt', 'r') as file:
         startAnalyze(file)
@@ -375,13 +316,15 @@ except FileNotFoundError:
 except Exception as e:
     print(f"Ocorreu um erro: {e}")
 
-
+print("\nTokens:")
 for item in tokenList:
     print(item)
 
-print("\nErros:")
-
-for item in errorList:
-    print(item)
+if len(errorList) == 0:
+    print("SUCESSO!")
+else:
+    print("\nErros:")
+    for item in errorList:
+        print(item)
 
 

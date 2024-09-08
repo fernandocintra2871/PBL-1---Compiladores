@@ -1,0 +1,20 @@
+Para utilizar nosso programa basta colocar a entrada do Analisador Lexico no aquivo code.txt
+
+Apos isso basta exectuar o lexer.py
+
+A saida do programa será exibida no terminal
+
+Os TOKENs encontrados, serão exibidos no seguinte formato:
+<Tipo do TOKENs, Valor, Linha>
+
+No caso dos identificadores, uma informação a mais é acrescentada, o indice do identificador na tabela de simbolos
+
+Ficando no seguinte formato:
+<Tipo do TOKENs, Valor, Indice da Tabela, Linha>
+
+Caso a analise lexica não encontre nenhum erro, uma mensagem de SUCESSO! será mostrada
+
+Caso um erro seja encontrado, a lista dos erros será exibida no terminal
+
+Ficando no seguinte formato:
+<Tipo do Erro, Lexema do Erro, Linha>

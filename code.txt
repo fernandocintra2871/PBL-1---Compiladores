@@ -1,38 +1,40 @@
-+
-++
+forval1
+for val 1
+if
+
+1
+12.3
+.1
+-1
+-1.234
+
+""
+"
+"a1
+"a1b2""azul" "verde"
+
+''
+'a
+'a1
+'b''c' 'd'
+
 +++
--
---
----
->=
-<=
->
-<
-==
-*
-.
-/
-!=
-!
-=
+=>=
 &
 &&
-|
-||
+/
+*
 
-+->=<=><==*./!=!=&&&|||
+,;(){}[]
+({[
 
-// Fala que é nós
-/* Testando */
-/* aaa
-d
-b
-aq
-12
-3
-asdasd 
+// Comentario
+
+/**/
+/*Comentario?*/
+/*
+Isso eh um comentario
 */
-/**//**/
-/* asdasd 
 */
-// para ver 
+/*
+BCMF
